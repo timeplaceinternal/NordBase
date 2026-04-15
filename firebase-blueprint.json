@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Equipment available for rent or sale",
+      "type": "object",
+      "properties": {
+        "name": { "type": "object", "description": "Localized names" },
+        "slug": { "type": "string" },
+        "category": { "type": "string", "enum": ["Ring Saw", "Core Drill", "Dehumidifier", "Service", "Other"] },
+        "rentalPrice": { "type": "number" },
+        "servicePrice": { "type": "number" },
+        "description": { "type": "object" },
+        "shortDescription": { "type": "object" },
+        "specifications": { "type": "array" },
+        "images": { "type": "array" },
+        "inStock": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["available", "rented", "maintenance"] },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "slug", "category", "rentalPrice", "description", "shortDescription", "images", "inStock", "status", "createdAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Equipment booking record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
+        "createdAt": { "type": "number" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" }
+      },
+      "required": ["userId", "items", "totalAmount", "status", "createdAt", "startDate", "endDate"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of equipment products"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Collection of user bookings"
+    }
+  }
+}

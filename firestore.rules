@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: products
+    // Document ID: {productId}
+    // Fields:
+    //   - name: map (required) - {en: string, pt: string}
+    //   - slug: string (required)
+    //   - category: string (required) - enum: Ring Saw, Core Drill, Dehumidifier, Service, Other
+    //   - rentalPrice: number (required)
+    //   - servicePrice: number (optional)
+    //   - description: map (required) - {en: string, pt: string}
+    //   - shortDescription: map (required) - {en: string, pt: string}
+    //   - specifications: list (required) - list of {key: string, value: string}
+    //   - images: list (required) - list of image URLs
+    //   - inStock: bool (required)
+    //   - status: string (required) - enum: available, rented, maintenance
+    //   - createdAt: number (required)
+    //
+    // Collection: bookings
+    // Document ID: {bookingId}
+    // Fields:
+    //   - userId: string (required)
+    //   - items: list (required)
+    //   - totalAmount: number (required)
+    //   - status: string (required) - enum: pending, confirmed, completed, cancelled
+    //   - createdAt: number (required)
+    //   - startDate: string (required)
+    //   - endDate: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || 
+         (request.auth.token.email == "timeplace.internal@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidProduct(data) {
+      return data.name is map &&
+             data.slug is string &&
+             data.category in ['Ring Saw', 'Core Drill', 'Dehumidifier', 'Service', 'Other'] &&
+             data.rentalPrice is number &&
+             data.description is map &&
+             data.images is list &&
+             data.status in ['available', 'rented', 'maintenance'];
+    }
+
+    function isValidBooking(data) {
+      return data.userId == request.auth.uid &&
+             data.items is list &&
+             data.totalAmount is number &&
+             data.status in ['pending', 'confirmed', 'completed', 'cancelled'] &&
+             data.startDate is string &&
+             data.endDate is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /products/{productId} {
+      allow read: if true; // Publicly readable catalog
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidBooking(request.resource.data);
+      allow update: if isAdmin(); // Only admin can update booking status
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) && (!('role' in request.resource.data) || isAdmin());
+    }
+  }
+}
