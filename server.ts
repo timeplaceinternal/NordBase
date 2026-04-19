@@ -20,12 +20,33 @@ async function startServer() {
   app.get("/api/init-db", async (req, res) => {
     try {
       await sql`
+        CREATE TABLE IF NOT EXISTS categories (
+          id SERIAL PRIMARY KEY,
+          slug TEXT UNIQUE NOT NULL,
+          name_en TEXT NOT NULL,
+          name_pt TEXT NOT NULL,
+          type TEXT NOT NULL, -- 'product' or 'service'
+          parent_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS site_content (
+          page_id TEXT PRIMARY KEY,
+          content JSONB NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+
+      await sql`
         CREATE TABLE IF NOT EXISTS products (
           id SERIAL PRIMARY KEY,
           slug TEXT UNIQUE NOT NULL,
           name_en TEXT NOT NULL,
           name_pt TEXT NOT NULL,
           category TEXT NOT NULL,
+          sub_category TEXT,
           rental_price DECIMAL NOT NULL,
           description_en TEXT,
           description_pt TEXT,
@@ -59,7 +80,6 @@ async function startServer() {
     }
   });
 
-  // Products API
   app.get("/api/products", async (req, res) => {
     try {
       const { rows } = await sql`SELECT * FROM products ORDER BY created_at DESC`;
@@ -69,6 +89,7 @@ async function startServer() {
         slug: row.slug,
         name: { en: row.name_en, pt: row.name_pt },
         category: row.category,
+        subCategory: row.sub_category,
         rentalPrice: parseFloat(row.rental_price),
         description: { en: row.description_en, pt: row.description_pt },
         shortDescription: { en: row.short_description_en, pt: row.short_description_pt },
@@ -97,6 +118,7 @@ async function startServer() {
         slug: row.slug,
         name: { en: row.name_en, pt: row.name_pt },
         category: row.category,
+        subCategory: row.sub_category,
         rentalPrice: parseFloat(row.rental_price),
         description: { en: row.description_en, pt: row.description_pt },
         shortDescription: { en: row.short_description_en, pt: row.short_description_pt },
@@ -118,11 +140,11 @@ async function startServer() {
     try {
       const result = await sql`
         INSERT INTO products (
-          slug, name_en, name_pt, category, rental_price, 
+          slug, name_en, name_pt, category, sub_category, rental_price, 
           description_en, description_pt, short_description_en, short_description_pt, 
           images, in_stock, status, specifications
         ) VALUES (
-          ${p.slug}, ${p.name.en}, ${p.name.pt}, ${p.category}, ${p.rentalPrice},
+          ${p.slug}, ${p.name.en}, ${p.name.pt}, ${p.category}, ${p.subCategory || null}, ${p.rentalPrice},
           ${p.description.en}, ${p.description.pt}, ${p.shortDescription.en}, ${p.shortDescription.pt},
           ${p.images}, ${p.inStock}, ${p.status}, ${JSON.stringify(p.specifications)}
         ) RETURNING id;
@@ -131,6 +153,108 @@ async function startServer() {
     } catch (error) {
       console.error("Insert Error:", error);
       res.status(500).json({ error: "Failed to create product" });
+    }
+  });
+
+  app.put("/api/products/:id", async (req, res) => {
+    const { id } = req.params;
+    const p = req.body;
+    try {
+      await sql`
+        UPDATE products SET
+          name_en = ${p.name.en},
+          name_pt = ${p.name.pt},
+          category = ${p.category},
+          sub_category = ${p.subCategory || null},
+          rental_price = ${p.rentalPrice},
+          description_en = ${p.description.en},
+          description_pt = ${p.description.pt},
+          short_description_en = ${p.shortDescription.en},
+          short_description_pt = ${p.shortDescription.pt},
+          images = ${p.images},
+          in_stock = ${p.inStock},
+          status = ${p.status},
+          specifications = ${JSON.stringify(p.specifications)}
+        WHERE id = ${id}
+      `;
+      res.json({ message: "Product updated successfully" });
+    } catch (error) {
+      console.error("Update Error:", error);
+      res.status(500).json({ error: "Failed to update product" });
+    }
+  });
+
+  app.delete("/api/products/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await sql`DELETE FROM products WHERE id = ${id}`;
+      res.json({ message: "Product deleted" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete product" });
+    }
+  });
+
+  // Categories API
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const { rows } = await sql`SELECT * FROM categories ORDER BY id ASC`;
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    const { slug, name_en, name_pt, type, parent_id } = req.body;
+    try {
+      const result = await sql`
+        INSERT INTO categories (slug, name_en, name_pt, type, parent_id)
+        VALUES (${slug}, ${name_en}, ${name_pt}, ${type}, ${parent_id || null})
+        RETURNING *;
+      `;
+      res.json(result.rows[0]);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create category" });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+      await sql`DELETE FROM categories WHERE id = ${id}`;
+      res.json({ message: "Category deleted" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete category" });
+    }
+  });
+
+  // Site Content API
+  app.get("/api/content/:pageId", async (req, res) => {
+    const { pageId } = req.params;
+    try {
+      const { rows } = await sql`SELECT * FROM site_content WHERE page_id = ${pageId}`;
+      if (rows.length === 0) return res.json({ page_id: pageId, content: {} });
+      res.json(rows[0]);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch content" });
+    }
+  });
+
+  app.post("/api/content/:pageId", async (req, res) => {
+    const { pageId } = req.params;
+    const { content } = req.body;
+    try {
+      await sql`
+        INSERT INTO site_content (page_id, content)
+        VALUES (${pageId}, ${JSON.stringify(content)})
+        ON CONFLICT (page_id) DO UPDATE SET
+          content = ${JSON.stringify(content)},
+          updated_at = CURRENT_TIMESTAMP;
+      `;
+      res.json({ message: "Content updated successfully" });
+    } catch (error) {
+      console.error("Content Save Error:", error);
+      res.status(500).json({ error: "Failed to save content" });
     }
   });
 

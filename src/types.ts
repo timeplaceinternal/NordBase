@@ -23,7 +23,8 @@ export interface Product {
     pt: string;
   };
   slug: string;
-  category: Category;
+  category: Category | string;
+  subCategory?: string;
   rentalPrice: number; // €/day
   servicePrice?: number; // € for "turnkey"
   description: {
