@@ -1,7 +1,5 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, addDoc } from 'firebase/firestore';
-import { db } from '@/src/lib/firebase';
 import { Product, Category } from '@/src/types';
 import { ProductCard } from '@/src/components/shop/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -31,31 +29,50 @@ const SEED_PRODUCTS: Partial<Product>[] = [
     createdAt: Date.now()
   },
   {
-    name: { en: 'Core Drill 250 mm', pt: 'Caroteadora 250 mm' },
+    name: { en: 'Magnetic Drill MD40', pt: 'Berbequim Magnético MD40' },
+    slug: 'magnetic-drill-md40',
+    category: 'MAGNETIC DRILL',
+    rentalPrice: 65,
+    description: { en: 'Compact and powerful magnetic drill for steel construction.', pt: 'Berbequim magnético compacto e potente para construção em aço.' },
+    shortDescription: { en: 'Professional magnetic drill.', pt: 'Berbequim magnético profissional.' },
+    images: ['https://picsum.photos/seed/magdrill/800/800'],
+    inStock: true,
+    status: 'available',
+    specifications: [{ key: 'Capacity', value: '40mm' }, { key: 'Power', value: '1100W' }],
+    createdAt: Date.now()
+  },
+  {
+    name: { en: 'Diamond Core Drill 250 mm', pt: 'Caroteadora Diamantada 250 mm' },
     slug: 'core-drill-250mm',
-    category: 'Core Drill',
+    category: 'Diamond Core Drill',
     rentalPrice: 95,
-    description: { en: 'High-performance core drill for precise holes.', pt: 'Caroteadora de alto desempenho para furos precisos.' },
+    description: { en: 'High-performance diamond core drill for precise holes.', pt: 'Caroteadora diamantada de alto desempenho para furos precisos.' },
     shortDescription: { en: '250mm diamond core drill.', pt: 'Caroteadora diamantada de 250mm.' },
     images: ['https://picsum.photos/seed/coredrill/800/800'],
     inStock: true,
     status: 'available',
     specifications: [{ key: 'Diameter', value: '250mm' }, { key: 'Brand', value: 'Eibenstock' }],
     createdAt: Date.now()
-  },
-  {
-    name: { en: 'Industrial Dehumidifier 90L', pt: 'Desumidificador Industrial 90L' },
-    slug: 'dehumidifier-90l',
-    category: 'Dehumidifier',
-    rentalPrice: 35,
-    description: { en: 'Powerful dehumidifier for construction drying.', pt: 'Desumidificador potente para secagem em construção.' },
-    shortDescription: { en: '90L/day industrial dehumidifier.', pt: 'Desumidificador industrial de 90L/dia.' },
-    images: ['https://picsum.photos/seed/dryer/800/800'],
-    inStock: true,
-    status: 'available',
-    specifications: [{ key: 'Capacity', value: '90L/day' }, { key: 'Brand', value: 'Trotec' }],
-    createdAt: Date.now()
   }
+];
+
+const CATEGORIES: Category[] = [
+  'Nail Gun',
+  'MAGNETIC DRILL',
+  'DRILL MACHINE',
+  'Wire Strip Machine',
+  'Ring Saw',
+  'Brushless Wall Slot Machine',
+  'Brushless Angle Grinder',
+  'Diamond Core Drill',
+  'Diamond Core Drill Bit',
+  'Seam Locker',
+  'ANNULAR CUTTER',
+  'Cold Metal Saw',
+  'Magnetic Chip Collector',
+  'Plastic Crusher Machine',
+  'Air Compressor',
+  'Others'
 ];
 
 export function Shop() {
@@ -68,13 +85,19 @@ export function Shop() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'products'));
-      const productList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      const response = await fetch('/api/products');
+      const productList = await response.json();
       
       if (productList.length === 0) {
+        // Initialize DB if empty (optional, could also be done via /api/init-db)
+        await fetch('/api/init-db');
         // Seed data if empty
         for (const p of SEED_PRODUCTS) {
-          await addDoc(collection(db, 'products'), p);
+          await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(p)
+          });
         }
         fetchProducts();
         return;
@@ -130,10 +153,9 @@ export function Shop() {
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10">
                 <SelectItem value="All">All Categories</SelectItem>
-                <SelectItem value="Ring Saw">Ring Saws</SelectItem>
-                <SelectItem value="Core Drill">Core Drills</SelectItem>
-                <SelectItem value="Dehumidifier">Dehumidifiers</SelectItem>
-                <SelectItem value="Service">Services</SelectItem>
+                {CATEGORIES.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

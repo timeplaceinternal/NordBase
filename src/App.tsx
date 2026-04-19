@@ -10,7 +10,6 @@ import { Home } from './pages/Home';
 import { Shop } from './pages/Shop';
 import { Admin } from './pages/Admin';
 import { ProductDetail } from './pages/ProductDetail';
-import { Cart } from './pages/Cart';
 import { Services } from './pages/Services';
 import { About } from './pages/About';
 import { Contact } from './pages/Contact';
@@ -29,8 +28,7 @@ export default function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/cart" element={<Cart />} />
+            <Route path="/admin162463" element={<Admin />} />
           </Routes>
         </main>
         <Footer />

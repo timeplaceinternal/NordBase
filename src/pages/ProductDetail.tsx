@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
-import { db } from '@/src/lib/firebase';
 import { Product, Language } from '@/src/types';
 import { useUIStore } from '@/src/store/useUIStore';
 import { useCartStore } from '@/src/store/useCartStore';
@@ -11,20 +9,18 @@ import {
   ShoppingCart, 
   Calendar as CalendarIcon, 
   CheckCircle2, 
-  Info,
   ShieldCheck,
   Truck,
   Wrench,
-  Loader2
+  Loader2,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
 export function ProductDetail() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const { language, t } = useUIStore();
@@ -35,10 +31,10 @@ export function ProductDetail() {
       if (!slug) return;
       setLoading(true);
       try {
-        const q = query(collection(db, 'products'), where('slug', '==', slug), limit(1));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          setProduct({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() } as Product);
+        const response = await fetch(`/api/products/${slug}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProduct(data);
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -122,18 +118,7 @@ export function ProductDetail() {
                 {name}
               </h1>
               <div className="flex items-center space-x-4 mb-6">
-                <div className="flex items-baseline space-x-1">
-                  <span className="text-4xl font-bold text-primary">€{product.rentalPrice}</span>
-                  <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('product.per_day')}</span>
-                </div>
-                {product.inStock ? (
-                  <Badge className="bg-green-500/10 text-green-500 border-green-500/20 px-3 py-1">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    In Stock
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="px-3 py-1">Out of Stock</Badge>
-                )}
+                <span className="text-sm font-medium text-primary uppercase tracking-widest">Inquire for pricing & availability</span>
               </div>
             </div>
 
@@ -155,23 +140,23 @@ export function ProductDetail() {
                 <span className="text-sm font-medium">Expert Support</span>
               </div>
               <div className="glass-panel p-4 rounded-2xl flex items-center space-x-3">
-                <CalendarIcon className="h-6 w-6 text-primary" />
-                <span className="text-sm font-medium">Flexible Booking</span>
+                <ShieldCheck className="h-6 w-6 text-primary" />
+                <span className="text-sm font-medium">Original Spare Parts</span>
               </div>
             </div>
 
             <div className="mt-auto space-y-4">
-              <Button 
-                size="lg" 
-                className="w-full bg-primary hover:bg-primary/90 text-white py-8 text-xl rounded-2xl orange-glow"
-                onClick={handleAddToCart}
-                disabled={!product.inStock}
-              >
-                <ShoppingCart className="h-6 w-6 mr-3" />
-                {t('product.book')}
-              </Button>
+              <Link to="/contact" className="w-full block">
+                <Button 
+                  size="lg" 
+                  className="w-full bg-primary hover:bg-primary/90 text-white py-8 text-xl rounded-2xl orange-glow"
+                >
+                  <Mail className="h-6 w-6 mr-3" />
+                  {t('product.book')}
+                </Button>
+              </Link>
               <p className="text-center text-xs text-muted-foreground">
-                Secure payment & instant confirmation
+                Our experts will contact you with a customized offer
               </p>
             </div>
           </motion.div>

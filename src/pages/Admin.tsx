@@ -17,10 +17,27 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { parseProductInfo } from '@/src/services/geminiService';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/src/lib/firebase';
 import { toast } from 'sonner';
 import { Product, Category } from '@/src/types';
+
+const CATEGORIES: Category[] = [
+  'Nail Gun',
+  'MAGNETIC DRILL',
+  'DRILL MACHINE',
+  'Wire Strip Machine',
+  'Ring Saw',
+  'Brushless Wall Slot Machine',
+  'Brushless Angle Grinder',
+  'Diamond Core Drill',
+  'Diamond Core Drill Bit',
+  'Seam Locker',
+  'ANNULAR CUTTER',
+  'Cold Metal Saw',
+  'Magnetic Chip Collector',
+  'Plastic Crusher Machine',
+  'Air Compressor',
+  'Others'
+];
 
 export function Admin() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -63,10 +80,17 @@ export function Admin() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await addDoc(collection(db, 'products'), {
-        ...formData,
-        createdAt: Date.now()
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          createdAt: Date.now()
+        })
       });
+
+      if (!response.ok) throw new Error('Failed to save');
+
       toast.success('Product added to catalog!');
       setFormData({
         name: { en: '', pt: '' },
@@ -123,24 +147,50 @@ export function Admin() {
           {/* Main Content */}
           <main className="flex-grow">
             {activeTab === 'dashboard' && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <Card className="glass-panel border-white/5">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
-                    <CardDescription className="text-3xl font-bold text-foreground">24</CardDescription>
-                  </CardHeader>
-                </Card>
-                <Card className="glass-panel border-white/5">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Active Bookings</CardTitle>
-                    <CardDescription className="text-3xl font-bold text-foreground">12</CardDescription>
-                  </CardHeader>
-                </Card>
-                <Card className="glass-panel border-white/5">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (MTD)</CardTitle>
-                    <CardDescription className="text-3xl font-bold text-primary">€4,250</CardDescription>
-                  </CardHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <Card className="glass-panel border-white/5">
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
+                      <CardDescription className="text-3xl font-bold text-foreground">24</CardDescription>
+                    </CardHeader>
+                  </Card>
+                  <Card className="glass-panel border-white/5">
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Active Bookings</CardTitle>
+                      <CardDescription className="text-3xl font-bold text-foreground">12</CardDescription>
+                    </CardHeader>
+                  </Card>
+                  <Card className="glass-panel border-white/5">
+                    <CardHeader>
+                      <CardTitle className="text-sm font-medium text-muted-foreground">Revenue (MTD)</CardTitle>
+                      <CardDescription className="text-3xl font-bold text-primary">€4,250</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </div>
+
+                <Card className="glass-panel border-white/5 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold">Database Management</h3>
+                      <p className="text-sm text-muted-foreground">Initialize or sync your Vercel Postgres tables.</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="border-primary/30 text-primary hover:bg-primary/5 rounded-xl"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch('/api/init-db');
+                          const data = await res.json();
+                          toast.success(data.message);
+                        } catch (e) {
+                          toast.error('Failed to sync database');
+                        }
+                      }}
+                    >
+                      Sync Database
+                    </Button>
+                  </div>
                 </Card>
               </div>
             )}
@@ -210,11 +260,15 @@ export function Admin() {
                       </div>
                       <div className="space-y-2">
                         <Label>Category</Label>
-                        <Input 
+                        <select 
                           value={formData.category} 
                           onChange={(e) => setFormData({...formData, category: e.target.value as Category})}
-                          className="glass-panel border-white/10 rounded-xl"
-                        />
+                          className="w-full h-10 px-3 py-2 glass-panel border border-white/10 rounded-xl bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        >
+                          {CATEGORIES.map(cat => (
+                            <option key={cat} value={cat} className="bg-background text-foreground">{cat}</option>
+                          ))}
+                        </select>
                       </div>
                       <div className="space-y-2">
                         <Label>Rental Price (€/day)</Label>

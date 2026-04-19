@@ -16,7 +16,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              Nordic Reliability in Algarve. Premium equipment rental and specialized construction services for professionals and demanding DIYers.
+              Nordic Reliability in Algarve. Premium equipment and specialized construction services for professionals and demanding DIYers.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">

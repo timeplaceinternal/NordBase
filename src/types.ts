@@ -1,4 +1,20 @@
-export type Category = 'Ring Saw' | 'Core Drill' | 'Dehumidifier' | 'Service' | 'Other';
+export type Category = 
+  | 'Nail Gun'
+  | 'MAGNETIC DRILL'
+  | 'DRILL MACHINE'
+  | 'Wire Strip Machine'
+  | 'Ring Saw'
+  | 'Brushless Wall Slot Machine'
+  | 'Brushless Angle Grinder'
+  | 'Diamond Core Drill'
+  | 'Diamond Core Drill Bit'
+  | 'Seam Locker'
+  | 'ANNULAR CUTTER'
+  | 'Cold Metal Saw'
+  | 'Magnetic Chip Collector'
+  | 'Plastic Crusher Machine'
+  | 'Air Compressor'
+  | 'Others';
 
 export interface Product {
   id: string;

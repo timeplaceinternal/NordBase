@@ -41,7 +41,7 @@ export function Home() {
               transition={{ duration: 0.8 }}
             >
               <Badge variant="outline" className="mb-6 border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
-                Premium Equipment Rental
+                Premium Equipment & Tools
               </Badge>
               <h1 className="text-5xl md:text-7xl font-display font-bold leading-[1.1] mb-6 tracking-tighter">
                 {t('hero.title')}
@@ -139,7 +139,7 @@ export function Home() {
             <div className="max-w-xl">
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">Turnkey Services</h2>
               <p className="text-muted-foreground">
-                Beyond rentals, we offer specialized construction services performed by our expert team.
+                We offer specialized construction services performed by our expert team.
               </p>
             </div>
             <Link to="/services">

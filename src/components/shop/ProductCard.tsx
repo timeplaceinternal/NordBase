@@ -59,24 +59,18 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
             {shortDesc}
           </p>
-          <div className="flex items-baseline space-x-1">
-            <span className="text-2xl font-bold text-primary">€{product.rentalPrice}</span>
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">{t('product.per_day')}</span>
+          <div className="flex items-center">
+            <span className="text-sm font-medium text-primary">Inquire for pricing</span>
           </div>
         </CardContent>
 
         <CardFooter className="p-6 pt-0 flex gap-2">
-          <Button
-            className="flex-grow bg-primary hover:bg-primary/90 text-white rounded-xl"
-            onClick={() => addItem(product)}
-            disabled={!product.inStock}
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {t('shop.rent_now')}
-          </Button>
-          <Link to={`/product/${product.slug}`}>
-            <Button variant="outline" size="icon" className="border-white/10 hover:bg-white/5 rounded-xl">
-              <Info className="h-4 w-4" />
+          <Link to={`/product/${product.slug}`} className="w-full">
+            <Button
+              className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl"
+            >
+              <Info className="h-4 w-4 mr-2" />
+              {t('shop.rent_now')}
             </Button>
           </Link>
         </CardFooter>

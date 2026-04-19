@@ -60,37 +60,11 @@ export function Navbar() {
                 <Globe className="h-5 w-5" />
                 <span className="sr-only">Toggle Language</span>
               </Button>
-
-              <Link to="/cart">
-                <Button variant="ghost" size="icon" className="relative hover:bg-white/5">
-                  <ShoppingCart className="h-5 w-5" />
-                  {cartCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary text-white text-[10px]">
-                      {cartCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
-
-              <Link to="/admin">
-                <Button variant="outline" className="border-white/10 hover:bg-white/5">
-                  <User className="h-4 w-4 mr-2" />
-                  {t('nav.admin')}
-                </Button>
-              </Link>
             </div>
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-4">
-            <Link to="/cart" className="relative">
-              <ShoppingCart className="h-6 w-6 text-foreground/70" />
-              {cartCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 bg-primary text-white text-[8px]">
-                  {cartCount}
-                </Badge>
-              )}
-            </Link>
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-foreground/70 hover:text-primary"
@@ -131,12 +105,6 @@ export function Navbar() {
                   <Globe className="h-4 w-4 mr-2" />
                   {language === 'en' ? 'Português' : 'English'}
                 </Button>
-                <Link to="/admin" onClick={() => setIsOpen(false)}>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90">
-                    <User className="h-4 w-4 mr-2" />
-                    {t('nav.admin')}
-                  </Button>
-                </Link>
               </div>
             </div>
           </motion.div>

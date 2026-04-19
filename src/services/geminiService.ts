@@ -12,7 +12,7 @@ export async function parseProductInfo(input: string) {
       The response must be a JSON object with the following structure:
       {
         "name": { "en": "string", "pt": "string" },
-        "category": "Ring Saw" | "Core Drill" | "Dehumidifier" | "Service" | "Other",
+        "category": "Nail Gun" | "MAGNETIC DRILL" | "DRILL MACHINE" | "Wire Strip Machine" | "Ring Saw" | "Brushless Wall Slot Machine" | "Brushless Angle Grinder" | "Diamond Core Drill" | "Diamond Core Drill Bit" | "Seam Locker" | "ANNULAR CUTTER" | "Cold Metal Saw" | "Magnetic Chip Collector" | "Plastic Crusher Machine" | "Air Compressor" | "Others",
         "rentalPrice": number,
         "description": { "en": "string", "pt": "string" },
         "shortDescription": { "en": "string", "pt": "string" },
@@ -35,7 +35,24 @@ export async function parseProductInfo(input: string) {
             },
             category: {
               type: Type.STRING,
-              enum: ["Ring Saw", "Core Drill", "Dehumidifier", "Service", "Other"]
+              enum: [
+                "Nail Gun",
+                "MAGNETIC DRILL",
+                "DRILL MACHINE",
+                "Wire Strip Machine",
+                "Ring Saw",
+                "Brushless Wall Slot Machine",
+                "Brushless Angle Grinder",
+                "Diamond Core Drill",
+                "Diamond Core Drill Bit",
+                "Seam Locker",
+                "ANNULAR CUTTER",
+                "Cold Metal Saw",
+                "Magnetic Chip Collector",
+                "Plastic Crusher Machine",
+                "Air Compressor",
+                "Others"
+              ]
             },
             rentalPrice: { type: Type.NUMBER },
             description: {
