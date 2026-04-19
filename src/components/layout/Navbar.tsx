@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { language, setLanguage, t } = useUIStore();
+  const { language, setLanguage, t, siteSettings } = useUIStore();
   const { items } = useCartStore();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -27,11 +27,19 @@ export function Navbar() {
         <div className="flex justify-between h-20 items-center">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center orange-glow">
-                <span className="text-white font-display font-bold text-xl">N</span>
-              </div>
-              <span className="text-2xl font-display font-bold tracking-tighter">
-                NORD <span className="text-primary">BASE</span>
+              {siteSettings.logoUrl ? (
+                <img src={siteSettings.logoUrl} alt={siteSettings.siteName || 'Logo'} className="h-10 w-auto object-contain" />
+              ) : (
+                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center orange-glow">
+                  <span className="text-white font-display font-bold text-xl">N</span>
+                </div>
+              )}
+              <span className="text-2xl font-display font-bold tracking-tighter uppercase">
+                {siteSettings.siteName ? (
+                   siteSettings.siteName
+                ) : (
+                  <>NORD <span className="text-primary">BASE</span></>
+                )}
               </span>
             </Link>
           </div>

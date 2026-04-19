@@ -5,6 +5,11 @@ interface UIStore {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  siteSettings: {
+    logoUrl?: string;
+    siteName?: string;
+  };
+  fetchSiteSettings: () => Promise<void>;
 }
 
 const translations = {
@@ -67,8 +72,18 @@ const translations = {
 export const useUIStore = create<UIStore>((set, get) => ({
   language: 'en',
   setLanguage: (language) => set({ language }),
+  siteSettings: {},
   t: (key) => {
     const { language } = get();
     return translations[language][key as keyof typeof translations['en']] || key;
+  },
+  fetchSiteSettings: async () => {
+    try {
+      const res = await fetch('/api/content/global');
+      const data = await res.json();
+      set({ siteSettings: data.content || {} });
+    } catch (e) {
+      console.error('Failed to fetch site settings', e);
+    }
   },
 }));

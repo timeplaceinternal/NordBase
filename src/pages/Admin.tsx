@@ -312,12 +312,12 @@ export function Admin() {
 
             {activeTab === 'content' && (
               <div className="space-y-8">
-                <div className="flex space-x-4">
-                  {['home', 'about', 'services', 'contact'].map(page => (
+                <div className="flex space-x-4 overflow-x-auto pb-2">
+                  {['global', 'home', 'about', 'services', 'contact'].map(page => (
                     <Button
                       key={page}
                       variant={activePage === page ? 'secondary' : 'outline'}
-                      className="rounded-full px-6"
+                      className="rounded-full px-6 flex-shrink-0"
                       onClick={() => setActivePage(page)}
                     >
                       {page.charAt(0).toUpperCase() + page.slice(1)}
@@ -330,42 +330,74 @@ export function Admin() {
                     <h3 className="text-xl font-bold capitalize">{activePage} Content</h3>
                     <Button className="orange-glow" onClick={savePageContent} disabled={isSaving}>
                       {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                      Save Page Changes
+                      Save Changes
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-8">
-                    <div className="space-y-4">
-                      <Label>Hero Title (English)</Label>
-                      <Input 
-                        value={pageContent.heroTitle_en || ''} 
-                        onChange={e => setPageContent({...pageContent, heroTitle_en: e.target.value})}
-                        className="glass-panel border-white/10"
-                      />
-                    </div>
-                    <div className="space-y-4">
-                      <Label>Hero Subtitle (English)</Label>
-                      <Textarea 
-                        value={pageContent.heroSubtitle_en || ''} 
-                        onChange={e => setPageContent({...pageContent, heroSubtitle_en: e.target.value})}
-                        className="glass-panel border-white/10"
-                      />
-                    </div>
-                    <div className="space-y-4">
-                      <Label>Featured Image URL</Label>
-                      <div className="flex space-x-4">
+                  {activePage === 'global' ? (
+                    <div className="grid grid-cols-1 gap-8">
+                      <div className="space-y-4">
+                        <Label>Site Logo (PNG recommended)</Label>
+                        <div className="flex items-center space-x-6">
+                          {pageContent.logoUrl ? (
+                            <img src={pageContent.logoUrl} alt="Site Logo" className="h-16 w-16 object-contain rounded-lg bg-white/5 p-2 border border-white/10" />
+                          ) : (
+                            <div className="h-16 w-16 bg-primary rounded-lg flex items-center justify-center orange-glow">
+                              <span className="text-white font-display font-bold text-xl">N</span>
+                            </div>
+                          )}
+                          <div className="flex-grow">
+                             <AssetUploader onUpload={url => setPageContent({...pageContent, logoUrl: url})} label="Upload Logo (PNG)" accept="image/png" />
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          This logo will appear in the navigation bar and serve as the main brand identifier across the site.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <Label>Site Title / Name</Label>
                         <Input 
-                          value={pageContent.heroImage || ''} 
-                          onChange={e => setPageContent({...pageContent, heroImage: e.target.value})}
+                          value={pageContent.siteName || 'NORD BASE'} 
+                          onChange={e => setPageContent({...pageContent, siteName: e.target.value})}
                           className="glass-panel border-white/10"
                         />
-                        <AssetUploader onUpload={url => setPageContent({...pageContent, heroImage: url})} label="Change Image" />
                       </div>
-                      {pageContent.heroImage && (
-                        <img src={pageContent.heroImage} alt="" className="w-full h-48 object-cover rounded-2xl border border-white/5" />
-                      )}
                     </div>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-8">
+                      <div className="space-y-4">
+                        <Label>Hero Title (English)</Label>
+                        <Input 
+                          value={pageContent.heroTitle_en || ''} 
+                          onChange={e => setPageContent({...pageContent, heroTitle_en: e.target.value})}
+                          className="glass-panel border-white/10"
+                        />
+                      </div>
+                      <div className="space-y-4">
+                        <Label>Hero Subtitle (English)</Label>
+                        <Textarea 
+                          value={pageContent.heroSubtitle_en || ''} 
+                          onChange={e => setPageContent({...pageContent, heroSubtitle_en: e.target.value})}
+                          className="glass-panel border-white/10"
+                        />
+                      </div>
+                      <div className="space-y-4">
+                        <Label>Featured Image URL</Label>
+                        <div className="flex space-x-4">
+                          <Input 
+                            value={pageContent.heroImage || ''} 
+                            onChange={e => setPageContent({...pageContent, heroImage: e.target.value})}
+                            className="glass-panel border-white/10"
+                          />
+                          <AssetUploader onUpload={url => setPageContent({...pageContent, heroImage: url})} label="Change Image" />
+                        </div>
+                        {pageContent.heroImage && (
+                          <img src={pageContent.heroImage} alt="" className="w-full h-48 object-cover rounded-2xl border border-white/5" />
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             )}
